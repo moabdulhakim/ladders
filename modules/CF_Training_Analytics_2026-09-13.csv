@@ -1,0 +1,8 @@
+Problem Name,Rating,Date Solved,Read Time (s),Think Time (s),Code Time (s),Debug Time (s),Total Time (s),Wrong Answers,Used Hints,Read Solution,Notes
+"Minor Reduction",1100,2026-09-10,120,60,300,300,780,1,true,false,"- Do not trust the testcases, WRITE your OWN! | - think twice before codeing"
+"Division by Two and Permutation",1100,2026-09-11,138,736,558,0,1432,0,false,true,"- YOU ARE OVERENGINEERING"
+"Sifid and Strange Subsequences",1100,2026-09-12,239,456,585,798,2078,0,true,false,"- Please Read the statement carefully. | - Do not think that there is a problem in the test cases. | - May be you do not understand the statement properly."
+"Mirror in the String",1100,2026-09-12,91,275,176,0,542,1,true,false,"- Please read the statement carefully. | - Please take care of the edge cases. | - Please try your own different test cases."
+"Sum of Cubes",1100,2026-09-12,119,62,364,0,545,0,false,false,"الحمد لله رب العالمين"
+"GCD Length",1100,2026-09-13,92,250,768,156,1266,0,true,false,"- You forgot thinking about prime factors."
+"Fun with Even Subarrays",1100,2026-09-13,240,510,896,641,2287,0,false,false,"- Please, Please, Please AVOID OVERENGINEERING. | - Think about edge cases. | - Think twice, code once"

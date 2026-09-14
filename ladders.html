@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CF Ladder - Training</title>
+    <script src="modules/tailwind.min.js"></script>
+    
+    <style>
+        mjx-container svg {
+            display: inline-block !important;
+        }
+    </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <!-- MathJax configuration to render ALL Codeforces math formats -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$$$', '$$$'], ['$', '$'], ['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+
+    <!-- Local Offline MathJax (Using SVG to avoid local font loading issues) -->
+    <script id="MathJax-script" async src="modules/mathjax/tex-svg.js"></script>
+    
+    <!-- Local Offline Confetti -->
+    <script src="modules/confetti.min.js"></script>
+    
+    <script src="data/my_tutorials.js"></script>
+    <script src="problems_data.js"></script>
+    <script src="friends_codes.js"></script>
+    <link href="modules/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="modules/prism.min.js"></script>
+    <script src="modules/prism-c.min.js"></script>
+    <script src="modules/prism-cpp.min.js"></script>
+
+    <style>
+        :root { --bg-dark: #0f172a; --bg-panel: #1e293b; --neon-blue: #38bdf8; --neon-green: #4ade80; --cf-text: #cbd5e1; }
+        body { background-color: var(--bg-dark); color: var(--cf-text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: var(--bg-dark); } ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+        
+        /* Fix Codeforces text flow */
+        .problem-statement { line-height: 1.8; font-size: 16px; padding: 30px; max-width: 950px; margin: auto; }
+        .problem-statement p { margin-bottom: 1.5em; display: block; }
+        .problem-statement ul { list-style-type: disc; margin-left: 2.5em; margin-bottom: 1.5em; }
+        .problem-statement li { display: list-item; margin-bottom: 0.5em; }
+        .problem-statement .tex-span { font-family: 'Times New Roman', serif; font-size: 1.1em; }
+        /* Safe background for normal problem images (like graphs or charts) */
+        .problem-statement img {
+            background-color: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        /* Magic trick: Invert Codeforces math images from black to white for dark mode */
+        .problem-statement img.tex-formula {
+            background-color: transparent;
+            filter: invert(1) hue-rotate(180deg) brightness(1.5);
+        }
+        mjx-container[display="true"] { display: inline-block !important; margin: 0 !important; }
+        
+        /* Compact Horizontal Header */
+        .problem-statement .header { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 10px; 
+            margin-bottom: 2rem; 
+            border-bottom: 1px solid #334155; 
+            padding-bottom: 1.5rem; 
+        }
+        .problem-statement .header .title { 
+            width: 100%; 
+            text-align: center; 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: var(--neon-blue); 
+            margin-bottom: 10px; 
+        }
+        /* Style the limits and info as small tags */
+        .problem-statement .header > div:not(.title) { 
+            font-size: 12px; 
+            color: #cbd5e1; 
+            background: var(--bg-panel);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+        }
+        .problem-statement .property-title { color: #64748b; font-weight: normal; margin-right: 6px; }
+        .problem-statement .property-title::after { content: ':'; }
+        
+        /* Testcases */
+        .problem-statement .sample-tests { background: var(--bg-panel); padding: 1.5rem; border-radius: 12px; margin-top: 2rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); border: 1px solid #334155; }
+        .problem-statement .sample-tests .section-title { font-size: 1.3rem; font-weight: bold; color: var(--neon-green); margin-bottom: 1rem; }
+        .problem-statement .sample-tests .input, .problem-statement .sample-tests .output { position: relative; margin-bottom: 1.5rem; }
+        .problem-statement .sample-tests .title { color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: bold; }
+        
+        /* Clickable Testcases styling */
+        .problem-statement .sample-tests pre { 
+            background: #020617; padding: 1.2rem; border-radius: 8px; border: 1px solid #475569; 
+            font-family: 'Consolas', monospace; font-size: 15px; white-space: pre-wrap; 
+            transition: all 0.2s ease; color: #e2e8f0; cursor: pointer; position: relative;
+        }
+        .problem-statement .sample-tests pre:hover { 
+            border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); 
+        }
+        .problem-statement .sample-tests pre:hover::after {
+            content: 'Click to copy'; position: absolute; top: -10px; right: 10px;
+            background: var(--neon-blue); color: #0f172a; padding: 2px 8px;
+            border-radius: 4px; font-size: 11px; font-weight: bold; font-family: sans-serif;
+        }
+        
+        #app { display: flex; height: 100vh; } 
+        #sidebar { width: 340px; background: var(--bg-panel); border-right: 1px solid #334155; display: flex; flex-direction: column; z-index: 10; }
+        #main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; } 
+        #problem-view { flex: 1; overflow-y: auto; padding: 2rem; scroll-behavior: smooth; }
+        
+        .problem-item { padding: 15px 20px; border-bottom: 1px solid #334155; cursor: pointer; display: flex; align-items: center; gap: 15px; transition: all 0.2s; }
+        .problem-item:hover { background: #334155; padding-left: 25px; } 
+        .problem-item.active { background: #0f172a; border-left: 5px solid var(--neon-blue); }
+        
+        .done-checkbox { appearance: none; min-width: 22px; height: 22px; border: 2px solid #64748b; border-radius: 50%; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; }
+        .done-checkbox:checked { background-color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 12px rgba(74, 222, 128, 0.6); }
+        .done-checkbox:checked::after { content: '✓'; color: #020617; font-weight: bold; font-size: 14px; }
+        
+        /* In-Progress (Has Cycles or Time) Checkbox Style */
+        .done-checkbox.in-progress:not(:checked) {
+            border-color: #fbbf24; /* لون أصفر/ذهبي */
+            background-color: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        }
+        .done-checkbox.in-progress:not(:checked)::after {
+            content: '⏳';
+            font-size: 11px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Fixed Modal Overlay - removed Tailwind "flex" conflict */
+        .modal-overlay { display: none; background: rgba(0,0,0,0.85); position: fixed; inset: 0; z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        
+        #fab-submit { display: none; position: fixed; bottom: 40px; right: 40px; z-index: 50; box-shadow: 0 4px 20px rgba(74,222,128,0.4); }
+    
+        /* Custom Prism Colors Override */
+
+        /* الكلمات المحجوزة (keywords) */
+        .token.keyword { color: #38bdf8 !important; } 
+
+        /* النصوص والكلمات المطبوعة (strings) */
+        .token.string { color: #4ade80 !important; } 
+
+        /* التعليقات (comments) */
+        .token.comment { color: #94a3b8 !important; font-style: italic; }
+
+        /* أسماء الدوال والوظائف (functions) */
+        .token.function { color: #facc15 !important; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="sidebar">
+        <!-- Replace the old settings button div with this one -->
+        <div class="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800 shadow-md">
+            <select id="rating-select" onchange="changeRating()" class="bg-slate-900 text-sky-400 border border-slate-600 rounded p-2 text-lg font-bold outline-none cursor-pointer hover:border-sky-400 transition">
+                <!-- Injected via JS -->
+            </select>
+            <div class="flex gap-3">
+                <button onclick="toggleAnalyticsModal()" class="text-slate-400 hover:text-sky-400 text-xl transition" title="Analytics Dashboard">📊</button>
+                <button onclick="toggleSettings()" class="text-slate-400 hover:text-white text-xl transition" title="Settings">⚙️</button>
+            </div>
+        </div>
+        <div class="p-3 bg-slate-900 text-center text-sm font-semibold text-green-400 border-b border-slate-800" id="progress-text">0 / 100 Solved</div>
+        <div id="problem-list" class="overflow-y-auto flex-1 pb-10"></div>
+    </div>
+    
+    <div id="main-content">
+        <div id="problem-view">
+            <div id="welcome-screen" class="flex flex-col items-center justify-center h-full text-slate-500">
+                <h1 class="text-5xl font-bold mb-6 text-slate-400">Ready to Conquer?</h1>
+                <p class="text-lg">Select a problem from the sidebar to begin your training.</p>
+            </div>
+            <div id="problem-content" style="display: none;"></div>
+        </div>
+        
+        <button id="fab-submit" onclick="submitCode()" class="bg-green-500 hover:bg-green-600 text-slate-900 font-bold py-3 px-6 rounded-full transition-transform hover:scale-105 items-center gap-2 text-lg">
+            <span>Submit Code</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+        </button>
+    </div>
+</div>
+
+<!-- API Settings Modal -->
+<div id="settings-modal" class="modal-overlay">
+    <div class="bg-slate-800 p-8 rounded-xl w-full max-w-md border border-slate-600 shadow-2xl transform transition-all">
+        <!-- Add this inside the settings-modal div, right above the API Key div -->
+        <div class="mb-5">
+            <label class="block text-sm font-semibold text-slate-300 mb-2">Codeforces Handle</label>
+            <input type="text" id="cf-handle" placeholder="e.g. tourist" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:border-sky-400 outline-none transition">
+        </div>
+        <!-- <h3 class="text-2xl font-bold text-white mb-2">API Settings 🔑</h3>
+        <p class="text-sm text-slate-400 mb-6">Required for direct submission to Codeforces.</p>
+        <div class="mb-5">
+            <label class="block text-sm font-semibold text-slate-300 mb-2">API Key</label>
+            <input type="text" id="api-key" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:border-sky-400 outline-none transition">
+        </div>
+        <div class="mb-8">
+            <label class="block text-sm font-semibold text-slate-300 mb-2">API Secret</label>
+            <input type="password" id="api-secret" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:border-sky-400 outline-none transition">
+        </div> -->
+        <div class="flex justify-end gap-3">
+            <button onclick="toggleSettings()" class="px-5 py-2.5 text-slate-300 hover:text-white font-semibold transition">Cancel</button>
+            <button onclick="saveSettings()" class="px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg font-bold shadow-lg transition">Save Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- Friends Submissions Modal -->
+<div id="friends-modal" class="modal-overlay">
+    <div class="bg-slate-800 rounded-xl w-11/12 max-w-5xl border border-slate-600 shadow-2xl flex flex-col h-[85vh] overflow-hidden">
+        <div class="flex justify-between items-center p-4 border-b border-slate-700 bg-slate-900">
+            <div>
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">👥 Friends' Solutions</h3>
+                <p id="friends-prob-name" class="text-sky-400 text-sm mt-1"></p>
+            </div>
+            <button onclick="toggleFriendsModal()" class="text-slate-400 hover:text-white text-3xl font-bold transition">&times;</button>
+        </div>
+        
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar for Friends List -->
+            <div class="w-1/4 bg-slate-900 border-r border-slate-700 flex flex-col p-2 overflow-y-auto" id="friends-list-container">
+                <!-- Injected via JS -->
+            </div>
+            
+            <!-- Code Viewer Area -->
+            <div class="w-3/4 bg-slate-800 p-4 overflow-y-auto relative">
+                <!-- Action Buttons (Zoom & Copy) -->
+                <div class="absolute top-6 right-6 flex gap-2 z-10">
+                    <button onclick="changeCodeFontSize(-1)" class="bg-slate-700 hover:bg-sky-500 text-white text-xs px-2 py-1 rounded transition font-bold" title="Decrease Font">A-</button>
+                    <button onclick="changeCodeFontSize(1)" class="bg-slate-700 hover:bg-sky-500 text-white text-xs px-2 py-1 rounded transition font-bold" title="Increase Font">A+</button>
+                    <button onclick="copyFriendCode()" class="bg-slate-700 hover:bg-sky-500 text-white text-xs px-3 py-1 rounded transition">Copy Code</button>
+                </div>                
+                <pre class="rounded-lg !mt-0 !bg-[#1d1f21] border border-slate-700 h-full"><code id="friend-code-display" class="language-cpp">Select a friend to view their code...</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Post-Solve Analytics Modal -->
+<div id="post-solve-modal" class="modal-overlay">
+    <div class="bg-slate-800 p-6 rounded-xl w-11/12 max-w-lg border border-slate-600 shadow-2xl flex flex-col">
+        <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
+            <div>
+                <h3 class="text-2xl font-bold text-white flex items-center gap-2">🎉 AC Achieved!</h3>
+                <p id="ps-prob-name" class="text-sky-400 text-sm mt-1"></p>
+            </div>
+            <button onclick="closePostSolveModal()" class="text-slate-400 hover:text-white text-3xl font-bold transition">&times;</button>
+        </div>
+        
+        <div class="flex flex-col gap-4 overflow-y-auto pr-2">
+            <!-- Auto-captured Time Stats -->
+            <div class="bg-slate-900 p-3 rounded-lg border border-slate-700 flex justify-between text-sm">
+                <div class="text-center"><div class="text-slate-500 text-xs">📖 Read</div><div id="ps-time-read" class="font-mono text-sky-400 font-bold">00:00</div></div>
+                <div class="text-center"><div class="text-slate-500 text-xs">✍️ Think</div><div id="ps-time-think" class="font-mono text-purple-400 font-bold">00:00</div></div>
+                <div class="text-center"><div class="text-slate-500 text-xs">💻 Code</div><div id="ps-time-code" class="font-mono text-orange-400 font-bold">00:00</div></div>
+                <div class="text-center"><div class="text-slate-500 text-xs">🐛 Debug</div><div id="ps-time-debug" class="font-mono text-red-400 font-bold">00:00</div></div>
+            </div>
+
+            <!-- Manual Analytics -->
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">❌ Wrong Answers</label>
+                    <input type="number" id="ps-wa" min="0" value="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white outline-none focus:border-sky-500">
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2 bg-slate-900 p-3 rounded-lg border border-slate-700">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="ps-hints" class="w-4 h-4 accent-sky-500">
+                    <span class="text-sm text-slate-300">💡 Took hints (Editorial/Friends)</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="ps-solution" class="w-4 h-4 accent-sky-500">
+                    <span class="text-sm text-slate-300">👀 Read the full solution/code</span>
+                </label>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">📝 Notes / Lessons Learned</label>
+                <textarea id="ps-notes" rows="2" placeholder="e.g., Forgot to use long long..." class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-white text-sm outline-none focus:border-sky-500 resize-none mb-3"></textarea>
+                
+                <label class="block text-xs font-semibold text-green-400 mb-1">💻 Your Accepted Code</label>
+                <textarea id="ps-code" rows="4" placeholder="Paste your C++ code here to save it for future reference..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-300 font-mono text-[11px] outline-none focus:border-green-500 resize-y"></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-5 pt-4 border-t border-slate-700">
+            <button onclick="savePostSolve(true)" class="px-4 py-2 text-slate-400 hover:text-white font-semibold transition text-sm">Skip & Save</button>
+            <button onclick="savePostSolve(false)" class="px-6 py-2 bg-green-500 hover:bg-green-600 text-slate-900 font-bold rounded-lg shadow-[0_0_15px_rgba(74,222,128,0.2)] transition text-sm">Save Analytics ✅</button>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics & Export Modal -->
+<div id="analytics-modal" class="modal-overlay">
+    <div class="bg-slate-800 p-6 rounded-xl w-11/12 max-w-3xl border border-slate-600 shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-3">
+            <h3 class="text-2xl font-bold text-white flex items-center gap-2">📊 Training Analytics</h3>
+            <button onclick="toggleAnalyticsModal()" class="text-slate-400 hover:text-white text-3xl font-bold transition">&times;</button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto pr-2 flex flex-col gap-6">
+            <!-- Summary Dashboard -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center shadow-inner">
+                    <div class="text-slate-500 text-xs font-bold mb-1">TOTAL SOLVED</div>
+                    <div id="stat-total-solved" class="text-2xl font-mono text-sky-400 font-bold">0</div>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center shadow-inner">
+                    <div class="text-slate-500 text-xs font-bold mb-1">AVG TIME / PROB</div>
+                    <div id="stat-avg-time" class="text-2xl font-mono text-green-400 font-bold">00:00</div>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center shadow-inner">
+                    <div class="text-slate-500 text-xs font-bold mb-1">TOTAL WAs</div>
+                    <div id="stat-total-wa" class="text-2xl font-mono text-red-400 font-bold">0</div>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 text-center shadow-inner">
+                    <div class="text-slate-500 text-xs font-bold mb-1">HINTS USED</div>
+                    <div id="stat-hints" class="text-2xl font-mono text-purple-400 font-bold">0</div>
+                </div>
+            </div>
+
+            <!-- Export Buttons -->
+            <div class="bg-slate-900 p-5 rounded-lg border border-slate-700 mt-2">
+                <h4 class="text-white font-bold mb-2">💾 Export Your Data</h4>
+                <p class="text-sm text-slate-400 mb-5">Download your analytics to track your progress in Excel or backup your training history.</p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="exportAnalytics('csv')" class="flex-1 bg-[#107c41] hover:bg-[#185c37] text-white font-bold py-3 px-4 rounded-lg transition shadow-lg flex items-center justify-center gap-2">
+                        <span>📥 Export as Excel (CSV)</span>
+                    </button>
+                    <button onclick="exportAnalytics('json')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg flex items-center justify-center gap-2">
+                        <span>📦 Export as JSON</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Code Modal
+<div id="submit-modal" class="modal-overlay">
+    <div class="bg-slate-800 p-6 rounded-xl w-11/12 max-w-3xl border border-slate-600 shadow-2xl flex flex-col h-[80vh]">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h3 class="text-2xl font-bold text-white">Submit Code 🚀</h3>
+                <p id="submit-problem-name" class="text-sky-400 text-sm mt-1"></p>
+            </div>
+            <button onclick="toggleSubmitModal(true)" class="text-slate-400 hover:text-white text-3xl font-bold transition">&times;</button>
+        </div>
+        <textarea id="code-input" class="flex-1 w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-white font-mono text-sm focus:border-green-400 outline-none resize-none" placeholder="Paste your C++ code here..."></textarea>
+        <div class="flex justify-end gap-3 mt-5">
+            <button onclick="toggleSubmitModal(true)" class="px-6 py-2.5 text-slate-300 hover:text-white font-semibold transition">Cancel</button>
+            <button onclick="submitCode()" class="px-8 py-2.5 bg-green-500 hover:bg-green-600 text-slate-900 font-bold rounded-lg shadow-[0_0_15px_rgba(74,222,128,0.3)] transition-transform hover:scale-105">Submit to Codeforces</button>
+        </div>
+    </div>
+</div>
+ -->
+
+ <!-- Floating Timer Widget -->
+<div id="cp-timer-widget" class="fixed bottom-6 left-[380px] bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 z-40 flex flex-col gap-2 transition-all hidden">
+    <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-1">
+        <span id="timer-phase-badge" class="text-xs font-bold px-2 py-1 rounded bg-sky-900 text-sky-400">📖 Reading</span>
+        <span class="text-sm font-mono text-slate-400" id="timer-total">Total: 00:00</span>
+    </div>
+    <div class="flex items-center gap-5">
+        <div id="timer-display" class="text-4xl font-mono text-white font-bold tracking-widest text-center w-28">00:00</div>
+        <div class="flex gap-2">
+            <!-- Play/Pause Button -->
+            <button onclick="toggleTimer()" id="timer-toggle-btn" class="bg-green-500 hover:bg-green-600 text-slate-900 rounded-full w-10 h-10 flex items-center justify-center text-lg transition shadow-lg">▶</button>
+            <!-- Next Phase Button -->
+            <button onclick="nextPhase()" class="bg-sky-500 hover:bg-sky-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg transition shadow-lg" title="Next Phase">⏭</button>
+            <!-- Reset Button -->
+            <button onclick="resetTimer()" class="bg-slate-700 hover:bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg transition" title="Reset">↻</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const CF_HANDLE = "";
+    const API_KEY = "";
+    const API_SECRET = "";
+
+    let currentRating = localStorage.getItem('cf_current_rating');
+    let PROBLEMS = [];
+    let currentProblem = null;
+    let doneSet = new Set();
+    
+    // Initialize the Dropdown and load saved rating
+    function initApp() {
+        const select = document.getElementById('rating-select');
+        select.innerHTML = '';
+        
+        const ratings = Object.keys(ALL_PROBLEMS);
+        if (ratings.length === 0) return;
+
+        ratings.forEach(rating => {
+            const opt = document.createElement('option');
+            opt.value = rating;
+            opt.textContent = `Rating ${rating} 🚀`;
+            select.appendChild(opt);
+        });
+
+        if (!currentRating || !ALL_PROBLEMS[currentRating]) {
+            currentRating = ratings[0];
+        }
+        
+        select.value = currentRating;
+        loadRatingData();
+        syncSolvedProblems(); // Auto-sync in the background when the app loads
+    }
+
+    // Handle Dropdown change
+    function changeRating() {
+        currentRating = document.getElementById('rating-select').value;
+        localStorage.setItem('cf_current_rating', currentRating);
+        loadRatingData();
+    }
+
+    function loadRatingData() {
+        // Fetch problems for the selected rating from the globally loaded ALL_PROBLEMS
+        PROBLEMS = ALL_PROBLEMS[currentRating] || [];
+        
+        // Sort problems descending based on C2 Ladders Frequency (which is already safely inside solvedCount)
+        PROBLEMS.sort((a, b) => b.solvedCount - a.solvedCount);
+        
+        const storageKey = `cf_ladder_done_${currentRating}`;
+        let savedData = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        
+        // Clean up any phantom data from localStorage
+        const validNames = new Set(PROBLEMS.map(p => p.name));
+        savedData = savedData.filter(name => validNames.has(name));
+        
+        doneSet = new Set(savedData);
+        localStorage.setItem(storageKey, JSON.stringify([...doneSet])); 
+        
+        renderSidebar();
+        
+        // Load the first unsolved problem, or the first problem if all are solved
+        if (PROBLEMS.length > 0) {
+            let nextProb = PROBLEMS.find(p => !doneSet.has(p.name));
+            if (!nextProb) nextProb = PROBLEMS[0];
+            loadProblem(nextProb);
+        } else {
+            document.getElementById('problem-content').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'flex';
+            document.getElementById('fab-submit').style.display = 'none';
+        }
+    }
+
+    function renderSidebar() {
+        const list = document.getElementById('problem-list');
+        list.innerHTML = '';
+        
+        PROBLEMS.forEach((prob, idx) => {
+            const div = document.createElement('div');
+            // Add styling for the active state and general layout
+            div.className = `problem-item ${currentProblem === prob ? 'active' : ''}`;
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox'; 
+            checkbox.className = 'done-checkbox'; 
+            checkbox.checked = doneSet.has(prob.name);
+
+            if (!checkbox.checked) {
+                const cycles = JSON.parse(localStorage.getItem('cf_cycles_' + prob.name) || '[]');
+                const timer = JSON.parse(localStorage.getItem('cf_timer_' + prob.name) || '{"read":0,"think":0,"code":0,"debug":0}');
+                const hasActiveTimer = timer.read > 0 || timer.think > 0 || timer.code > 0 || timer.debug > 0;
+                
+                if (cycles.length > 0 || hasActiveTimer) {
+                    checkbox.classList.add('in-progress');
+                }
+            }
+            
+            // Intercept the click to show the modal instead of checking immediately
+            checkbox.onclick = (e) => { 
+                e.preventDefault(); 
+                e.stopPropagation();
+                
+                if (!doneSet.has(prob.name)) {
+                    // Open the analytics modal
+                    openPostSolveModal(prob);
+                } else {
+                    // Uncheck and remove from done set
+                    doneSet.delete(prob.name);
+                    localStorage.setItem(`cf_ladder_done_${currentRating}`, JSON.stringify([...doneSet]));
+                    // إزالة إحصائيات المسألة عند إلغاء الحل (اختياري، للحفاظ على التناسق)
+                    let allStats = JSON.parse(localStorage.getItem('cf_analytics_data') || '{}');
+                    delete allStats[prob.name];
+                    localStorage.setItem('cf_analytics_data', JSON.stringify(allStats));
+                    
+                    renderSidebar();
+                }
+            };
+            
+            const titleBox = document.createElement('div');
+            titleBox.className = 'flex flex-col';
+            
+            // Inject the problem index, name, and the frequency (solved count)
+            titleBox.innerHTML = `
+                <div>
+                    <span class="text-xs text-slate-500 mr-2">#${idx + 1}</span> 
+                    <span class="font-semibold text-slate-200">${prob.name}</span>
+                </div>
+                <div class="text-[11px] text-sky-400 mt-1 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    ${prob.solvedCount || 'N/A'} Solves
+                </div>
+            `;
+            
+            div.appendChild(checkbox); 
+            div.appendChild(titleBox); 
+            
+            // Load problem details when clicked
+            div.onclick = () => loadProblem(prob);
+            
+            list.appendChild(div);
+        });
+        
+        updateProgress();
+    }
+
+    function toggleDone(name, isDone) {
+        if(isDone) { 
+            doneSet.add(name); 
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#4ade80', '#38bdf8'] }); 
+        } else { 
+            doneSet.delete(name); 
+        }
+        const storageKey = `cf_ladder_done_${currentRating}`;
+        localStorage.setItem(storageKey, JSON.stringify([...doneSet]));
+        updateProgress();
+    }
+
+    function updateProgress() { 
+        document.getElementById('progress-text').innerText = `${doneSet.size} / ${PROBLEMS.length} Solved`; 
+    }
+
+    function loadProblem(prob) {
+        currentProblem = prob; 
+        renderSidebar();
+        
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('fab-submit').style.display = 'flex';
+        
+        const contentDiv = document.getElementById('problem-content');
+        contentDiv.style.display = 'block'; 
+        contentDiv.innerHTML = prob.html;
+        
+        const headerEl = contentDiv.querySelector('.header');
+        if(headerEl) {
+            // (1) Link the title to Codeforces
+            const titleEl = headerEl.querySelector('.title');
+            if(titleEl) {
+                const originalText = titleEl.innerText;
+                titleEl.innerHTML = `<a href="https://codeforces.com/contest/${prob.contestId}/problem/${prob.index}" target="_blank" title="Open in Codeforces">${originalText} 🔗</a>`;
+            }
+            
+            // (2) Friends Buttons Container (CF Original + Local Modal)
+            const btnsDiv = document.createElement('div');
+            btnsDiv.className = "w-full flex justify-center gap-3 mt-2";
+            
+            const externalFriendsLink = document.createElement('a');
+            externalFriendsLink.href = `https://codeforces.com/contest/${prob.contestId}/status/${prob.index}?friends=on`;
+            externalFriendsLink.target = "_blank";
+            externalFriendsLink.innerHTML = "🌐 CF Friends";
+            externalFriendsLink.className = "hover:scale-105 transition-transform flex items-center";
+            externalFriendsLink.style.cssText = "font-size: 12px; color: #f87171; background: #450a0a; padding: 4px 12px; border-radius: 20px; border: 1px solid #b91c1c; text-decoration: none; font-weight: bold; cursor: pointer;";
+            btnsDiv.appendChild(externalFriendsLink);
+
+            const friendsBtn = document.createElement('button');
+            friendsBtn.innerHTML = "👥 Local Codes";
+            friendsBtn.className = "hover:scale-105 transition-transform flex items-center";
+            friendsBtn.style.cssText = "font-size: 12px; color: #38bdf8; background: #0c4a6e; padding: 4px 12px; border-radius: 20px; border: 1px solid #0ea5e9; font-weight: bold; cursor: pointer;";
+            friendsBtn.onclick = openFriendsModal; 
+            btnsDiv.appendChild(friendsBtn);
+            
+            headerEl.appendChild(btnsDiv);
+
+            // 💡 Tutorial Button
+            const tutorialBtn = document.createElement('button');
+            tutorialBtn.id = "tutorial-btn";
+            tutorialBtn.innerHTML = "💡 Show Tutorial";
+            tutorialBtn.className = "hover:scale-105 transition-transform flex items-center";
+            tutorialBtn.style.cssText = "font-size: 12px; color: #facc15; background: #422006; padding: 4px 12px; border-radius: 20px; border: 1px solid #ca8a04; font-weight: bold; cursor: pointer; margin-left: 8px;";
+            tutorialBtn.onclick = toggleTutorial;
+            btnsDiv.appendChild(tutorialBtn);
+
+            // 📦 Tutorial Box (Hidden by default, inserted right after the header)
+            const tutorialBox = document.createElement('div');
+            tutorialBox.id = "tutorial-box";
+            tutorialBox.style.cssText = "display: none; margin-top: 15px; margin-bottom: 20px; padding: 20px; border-radius: 12px; border: 1px solid #ca8a04; background: #020617; color: #cbd5e1; font-size: 15px; line-height: 1.8; box-shadow: 0 4px 15px rgba(0,0,0,0.3);";
+            // Insert it strictly between the header and the problem text
+            headerEl.parentNode.insertBefore(tutorialBox, headerEl.nextSibling);
+
+            // (3) Inject the new Inline Timer below the buttons
+            // Load persistent timer
+            loadTimerState(prob.name); 
+
+            // Add an "Edit Stats" button if the problem is already solved
+            if (doneSet.has(prob.name)) {
+                const editBtn = document.createElement('button');
+                editBtn.innerHTML = "📝 Edit Stats";
+                editBtn.className = "hover:scale-105 transition-transform flex items-center";
+                editBtn.style.cssText = "font-size: 12px; color: #4ade80; background: #064e3b; padding: 4px 12px; border-radius: 20px; border: 1px solid #10b981; font-weight: bold; cursor: pointer; margin-left: 8px;";
+                editBtn.onclick = () => openPostSolveModal(prob);
+                btnsDiv.appendChild(editBtn);
+            }
+            
+            const timerDiv = document.createElement('div');
+            timerDiv.className = "w-full flex flex-wrap justify-center items-center gap-2 md:gap-3 mt-4 pt-3 border-t border-slate-700/50 bg-slate-800/40 p-2 rounded-lg shadow-inner";
+            timerDiv.innerHTML = `
+                <div class="flex items-center gap-1 md:gap-2 select-none w-full justify-center">
+                    <span class="text-xs md:text-sm font-bold text-slate-300 mr-1 md:mr-3">⏱️ Total: <span id="time-total" class="text-sky-400 font-mono text-sm md:text-base tracking-wider">00:00</span></span>
+                    
+                    <button id="btn-phase-read" onclick="togglePhase('read')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                        📖 Read <span id="time-read" class="font-mono ml-1">00:00</span>
+                    </button>
+                    
+                    <button id="btn-phase-think" onclick="togglePhase('think')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                        ✍️ Think <span id="time-think" class="font-mono ml-1">00:00</span>
+                    </button>
+                    
+                    <button id="btn-phase-code" onclick="togglePhase('code')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                        💻 Code <span id="time-code" class="font-mono ml-1">00:00</span>
+                    </button>
+                    
+                    <button id="btn-phase-debug" onclick="togglePhase('debug')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                        🐛 Debug <span id="time-debug" class="font-mono ml-1">00:00</span>
+                    </button>
+                    
+                    <button onclick="saveCycle()" class="ml-2 px-2 py-1 text-[10px] md:text-xs font-bold rounded bg-sky-900/50 text-sky-400 hover:bg-sky-800 border border-sky-700 transition" title="Save this cycle and start a new one">💾 Save Cycle</button>
+                    <button onclick="resetInlineTimer()" class="ml-1 px-2 py-1 text-[10px] md:text-xs font-bold rounded bg-slate-700/50 text-slate-400 hover:bg-red-900/60 hover:text-red-400 border border-slate-600 hover:border-red-700/50 transition" title="Reset Timer">↻</button>
+                </div>
+                <div id="cycles-list" class="w-full mt-3 flex flex-wrap justify-center gap-2 empty:hidden"></div>
+            `;
+            headerEl.appendChild(timerDiv);
+            renderCycles();
+        }
+        
+        // Setup 1-click copy for testcases
+        contentDiv.querySelectorAll('.sample-tests pre').forEach(pre => {
+            pre.onclick = () => { 
+                navigator.clipboard.writeText(pre.innerText); 
+                const oldBorder = pre.style.borderColor;
+                const oldShadow = pre.style.boxShadow;
+                
+                pre.style.borderColor = 'var(--neon-green)';
+                pre.style.boxShadow = '0 0 15px rgba(74,222,128,0.4)';
+                
+                setTimeout(() => { 
+                    pre.style.borderColor = oldBorder;
+                    pre.style.boxShadow = oldShadow;
+                }, 400); 
+            };
+        });
+        
+        if (window.MathJax) { 
+            MathJax.typesetClear();
+            MathJax.typesetPromise([contentDiv]);
+        }
+        document.getElementById('problem-view').scrollTop = 0;
+    }
+
+    // Update toggleSettings to load the handle
+    function toggleSettings() {
+        const modal = document.getElementById('settings-modal');
+        const isVisible = window.getComputedStyle(modal).display !== 'none';
+        
+        if (isVisible) { 
+            modal.style.display = 'none'; 
+        } else { 
+            modal.style.display = 'flex'; 
+            document.getElementById('cf-handle').value = localStorage.getItem('cf_handle') || CF_HANDLE;
+            document.getElementById('api-key').value = localStorage.getItem('cf_api_key') || API_KEY; 
+            document.getElementById('api-secret').value = localStorage.getItem('cf_api_secret') || API_SECRET; 
+        }
+    }
+
+    // Restore and update saveSettings to save the handle and trigger sync
+    function saveSettings() {
+        const handle = document.getElementById('cf-handle').value.trim();
+        localStorage.setItem('cf_handle', handle);
+        localStorage.setItem('cf_api_key', document.getElementById('api-key').value);
+        localStorage.setItem('cf_api_secret', document.getElementById('api-secret').value);
+        
+        toggleSettings(); 
+        syncSolvedProblems(); // Sync immediately after saving handle
+        alert('Settings Saved! Syncing your solved problems...');
+    }
+
+    /*
+    function toggleSubmitModal(forceClose = false) {
+        const modal = document.getElementById('submit-modal');
+        const isVisible = window.getComputedStyle(modal).display !== 'none';
+        if(isVisible || forceClose) {
+            modal.style.display = 'none';
+        } else {
+            if(!currentProblem) return alert("Please select a problem first.");
+            document.getElementById('submit-problem-name').innerText = currentProblem.name;
+            document.getElementById('code-input').value = '';
+            modal.style.display = 'flex';
+            document.getElementById('code-input').focus();
+        }
+    }
+    */
+
+    /*
+    async function sha512(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-512', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    */
+
+    // Fetch user submissions and automatically mark accepted problems as done
+    // Fetch user submissions and strictly sync solved problems (Anti-Override & Clean)
+    async function syncSolvedProblems() {
+        const handle = localStorage.getItem('cf_handle');
+        if (!handle) return;
+        
+        try {
+            const res = await fetch(`https://codeforces.com/api/user.status?handle=${handle}`);
+            const data = await res.json();
+            
+            if (data.status === 'OK') {
+                const solvedNames = new Set();
+                data.result.forEach(sub => {
+                    if (sub.verdict === 'OK' && sub.problem && sub.problem.name) {
+                        solvedNames.add(sub.problem.name);
+                    }
+                });
+
+                let isUpdated = false;
+
+                for (const rating in ALL_PROBLEMS) {
+                    const storageKey = `cf_ladder_done_${rating}`;
+                    let savedData = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                    
+                    const validNames = new Set(ALL_PROBLEMS[rating].map(p => p.name));
+                    
+                    // 1. تنظيف أي مسائل وهمية مش موجودة في الليدر أصلاً
+                    let cleanData = savedData.filter(name => validNames.has(name));
+                    
+                    // 2. الفلترة الصارمة: الاحتفاظ فقط بالممسوحات اللي المستخدم حلها فعلاً في كودفورسس
+                    // (ده اللي بيمنع داتا tourist أو أي هاندل تاني إنه يلزق للأبد)
+                    let strictSyncedData = cleanData.filter(name => solvedNames.has(name));
+                    
+                    // 3. إضافة أي مسألة جديدة اتحلت برا الموقع (أو اتسحبت لأول مرة)
+                    validNames.forEach(name => {
+                        if (solvedNames.has(name) && !strictSyncedData.includes(name)) {
+                            strictSyncedData.push(name);
+                        }
+                    });
+
+                    // لو حصل أي تغيير، احفظ الداتا النضيفة بس
+                    if (strictSyncedData.length !== savedData.length || !savedData.every(val => strictSyncedData.includes(val))) {
+                        localStorage.setItem(storageKey, JSON.stringify(strictSyncedData));
+                        isUpdated = true;
+                    }
+                }
+                
+                if (isUpdated) {
+                    loadRatingData(); 
+                    console.log("Strict Sync & Cleanup complete!");
+                }
+            }
+        } catch (err) {
+            console.error("Failed to sync solved problems:", err);
+        }
+    }
+    // Global variable to hold the currently viewed code
+    let currentFriendCode = "";
+
+    function openFriendsModal() {
+        if (!currentProblem) return;
+        
+        const modal = document.getElementById('friends-modal');
+        const listContainer = document.getElementById('friends-list-container');
+        const codeDisplay = document.getElementById('friend-code-display');
+        document.getElementById('friends-prob-name').innerText = currentProblem.name;
+        
+        listContainer.innerHTML = '';
+        currentFriendCode = "";
+        
+        // تنظيف الشاشة الافتتاحية
+        codeDisplay.textContent = 'Select a friend to view their code...';
+        codeDisplay.className = 'language-cpp';
+        codeDisplay.removeAttribute('data-highlighted');
+        if (window.Prism) Prism.highlightElement(codeDisplay);
+        
+        if (typeof FRIENDS_CODES !== 'undefined' && FRIENDS_CODES[currentProblem.name]) {
+            const friendsData = FRIENDS_CODES[currentProblem.name];
+            const friends = Object.keys(friendsData);
+            
+            if (friends.length === 0) {
+                listContainer.innerHTML = '<div class="text-slate-500 text-center mt-5 text-sm">No friends solved this yet.</div>';
+            } else {
+                friends.forEach((friend, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-3 mb-2 rounded-lg bg-slate-800 hover:bg-sky-900 hover:text-sky-300 text-slate-300 font-semibold text-sm transition border border-transparent hover:border-sky-700";
+                    btn.innerText = `👤 ${friend}`;
+                    
+                    btn.onclick = () => {
+                        Array.from(listContainer.children).forEach(c => c.classList.remove('bg-sky-900', 'border-sky-500', 'text-sky-300'));
+                        btn.classList.add('bg-sky-900', 'border-sky-500', 'text-sky-300');
+                        
+                        currentFriendCode = friendsData[friend];
+                        
+                        // 1. وضع النص الخام (لحماية رموز مثل <bits/stdc++.h>)
+                        codeDisplay.textContent = currentFriendCode;
+                        // 2. إجبار المكتبة على قراءته كـ C++
+                        codeDisplay.className = 'language-cpp';
+                        // 3. مسح ختم التلوين القديم
+                        codeDisplay.removeAttribute('data-highlighted');
+                        
+                        // 4. تلوين العنصر
+                        if (window.Prism) {
+                            Prism.highlightElement(codeDisplay);
+                        }
+                    };
+                    
+                    listContainer.appendChild(btn);
+                    
+                    if (index === 0) btn.click();
+                });
+            }
+        } else {
+            listContainer.innerHTML = '<div class="text-slate-500 text-center mt-5 text-sm">No data available. Run the aggregator script first.</div>';
+        }
+        
+        modal.style.display = 'flex';
+    }
+    
+    function toggleFriendsModal() {
+        document.getElementById('friends-modal').style.display = 'none';
+    }
+
+    function copyFriendCode() {
+        if (!currentFriendCode) return;
+        navigator.clipboard.writeText(currentFriendCode).then(() => {
+            alert("Code copied to clipboard!");
+        });
+    }
+
+    // Default font size in pixels
+    let currentCodeFontSize = 14; 
+
+    function changeCodeFontSize(step) {
+        // Increase or decrease by 2px
+        currentCodeFontSize += (step * 2); 
+        
+        // Prevent font from getting too small or too huge
+        if (currentCodeFontSize < 10) currentCodeFontSize = 10;
+        if (currentCodeFontSize > 34) currentCodeFontSize = 34;
+        
+        const codeDisplay = document.getElementById('friend-code-display');
+        if (codeDisplay) {
+            codeDisplay.style.fontSize = `${currentCodeFontSize}px`;
+        }
+    }
+
+    // --- Tutorial Logic ---
+    function toggleTutorial() {
+        const tutorialBox = document.getElementById("tutorial-box");
+        const tutorialBtn = document.getElementById("tutorial-btn");
+        if (!tutorialBox || !currentProblem) return;
+
+        if (tutorialBox.style.display === "block") {
+            tutorialBox.style.display = "none";
+            tutorialBtn.innerHTML = "💡 Show Tutorial";
+            return;
+        }
+
+        if (typeof PROBLEM_TUTORIALS !== "undefined" && PROBLEM_TUTORIALS[currentProblem.name]) {
+            let tutorialText = PROBLEM_TUTORIALS[currentProblem.name];
+            
+            // Format line breaks for HTML
+            tutorialText = tutorialText.replace(/\n/g, "<br>");
+            
+            tutorialBox.innerHTML = `<h4 style="color: #facc15; margin-bottom: 15px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #ca8a04; padding-bottom: 8px;">📝 Editorial:</h4>${tutorialText}`;
+            
+            // Trigger MathJax to render equations beautifully in the tutorial box
+            if (window.MathJax) { 
+                MathJax.typesetClear([tutorialBox]);
+                MathJax.typesetPromise([tutorialBox]);
+            }
+        } else {
+            tutorialBox.innerHTML = "<i style='color: #ef4444;'>No offline tutorial found for this specific problem.</i>";
+        }
+        
+        tutorialBox.style.display = "block";
+        tutorialBtn.innerHTML = "Hide Tutorial";
+    }
+
+    // Timer -----------
+
+    // --- Inline Timer Logic (Timestamp-based & Persistent) ---
+    let cpTimerInterval = null;
+    let phaseTimes = { read: 0, think: 0, code: 0, debug: 0 };
+    let activePhase = null; 
+    let isTimerPaused = true;
+    let lastTickTime = 0;
+
+    function formatCPTime(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
+        const s = (totalSec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    // Load saved timer state if you left the problem and came back
+    function loadTimerState(probName) {
+        if (cpTimerInterval) clearInterval(cpTimerInterval);
+        cpTimerInterval = null;
+        activePhase = null;
+        isTimerPaused = true;
+        lastTickTime = 0;
+        
+        const saved = localStorage.getItem('cf_timer_' + probName);
+        if (saved) {
+            phaseTimes = JSON.parse(saved);
+        } else {
+            phaseTimes = { read: 0, think: 0, code: 0, debug: 0 };
+        }
+
+        renderCycles();
+    }
+
+    // الدالة اللي اتمسحت بالغلط المسؤولة عن تحديث الشاشة
+    function updateInlineTimerUI() {
+        if (!document.getElementById('time-total')) return; 
+        
+        document.getElementById('time-read').innerText = formatCPTime(phaseTimes.read);
+        document.getElementById('time-think').innerText = formatCPTime(phaseTimes.think);
+        document.getElementById('time-code').innerText = formatCPTime(phaseTimes.code);
+        document.getElementById('time-debug').innerText = formatCPTime(phaseTimes.debug);
+        
+        const total = phaseTimes.read + phaseTimes.think + phaseTimes.code + phaseTimes.debug;
+        document.getElementById('time-total').innerText = formatCPTime(total);
+
+        const phases = ['read', 'think', 'code', 'debug'];
+        phases.forEach(p => {
+            const btn = document.getElementById(`btn-phase-${p}`);
+            if (!btn) return;
+            
+            if (p === activePhase) {
+                if (isTimerPaused) {
+                    btn.className = "px-3 py-1 text-xs font-bold rounded cursor-pointer transition border border-yellow-500 bg-yellow-900/30 text-yellow-400 opacity-80";
+                } else {
+                    btn.className = "px-3 py-1 text-xs font-bold rounded cursor-pointer transition border border-green-500 bg-green-900/40 text-green-400 shadow-[0_0_8px_rgba(74,222,128,0.3)]";
+                }
+            } else {
+                btn.className = "px-3 py-1 text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700";
+            }
+        });
+    }
+    
+    function togglePhase(phase) {
+        const now = Date.now();
+        
+        if (activePhase === phase) {
+            if (isTimerPaused) {
+                lastTickTime = now;
+                isTimerPaused = false;
+            } else {
+                const delta = now - lastTickTime;
+                phaseTimes[activePhase] += delta;
+                isTimerPaused = true;
+                if (currentProblem) {
+                    localStorage.setItem('cf_timer_' + currentProblem.name, JSON.stringify(phaseTimes));
+                }
+            }
+        } else {
+            if (activePhase && !isTimerPaused) {
+                const delta = now - lastTickTime;
+                phaseTimes[activePhase] += delta;
+            }
+            activePhase = phase;
+            isTimerPaused = false; 
+            lastTickTime = now;
+            if (currentProblem) {
+                localStorage.setItem('cf_timer_' + currentProblem.name, JSON.stringify(phaseTimes));
+            }
+        }
+        
+        if (!cpTimerInterval) {
+            cpTimerInterval = setInterval(() => {
+                if (!isTimerPaused && activePhase) {
+                    const currentNow = Date.now();
+                    const delta = currentNow - lastTickTime;
+                    phaseTimes[activePhase] += delta;
+                    lastTickTime = currentNow;
+                    
+                    if (currentProblem) {
+                        localStorage.setItem('cf_timer_' + currentProblem.name, JSON.stringify(phaseTimes));
+                    }
+                    updateInlineTimerUI();
+                }
+            }, 500); 
+        }
+        updateInlineTimerUI();
+    }
+
+    function resetInlineTimer() {
+        phaseTimes = { read: 0, think: 0, code: 0, debug: 0 };
+        activePhase = null;
+        isTimerPaused = true;
+        lastTickTime = 0;
+        if (currentProblem) localStorage.removeItem('cf_timer_' + currentProblem.name);
+        
+        if (cpTimerInterval) {
+            clearInterval(cpTimerInterval);
+            cpTimerInterval = null;
+        }
+        updateInlineTimerUI();
+    }
+    
+    // --- Cycles Logic ---
+    function saveCycle() {
+        if (!currentProblem) return;
+        
+        // وقف التايمر الأول لو شغال عشان نحسب آخر ثواني
+        if (activePhase && !isTimerPaused) {
+            togglePhase(activePhase); 
+        }
+
+        const total = phaseTimes.read + phaseTimes.think + phaseTimes.code + phaseTimes.debug;
+        if (total === 0) return alert("لا يوجد وقت لحفظه في هذه الدورة!");
+
+        // جلب الدورات السابقة للمسألة دي من اللوكال ستوريدج
+        let cycles = JSON.parse(localStorage.getItem('cf_cycles_' + currentProblem.name) || '[]');
+        cycles.push({...phaseTimes}); // حفظ الدورة الحالية
+        localStorage.setItem('cf_cycles_' + currentProblem.name, JSON.stringify(cycles));
+
+        resetInlineTimer(); // تصفير العداد لبدء دورة جديدة
+        renderCycles(); // تحديث الشاشة
+    }
+
+    function renderCycles() {
+        const container = document.getElementById('cycles-list');
+        if (!container || !currentProblem) return;
+        
+        let cycles = JSON.parse(localStorage.getItem('cf_cycles_' + currentProblem.name) || '[]');
+        if (cycles.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        let html = '<span class="text-xs text-slate-400 font-bold flex items-center">🎯 Previous Cycles:</span>';
+        cycles.forEach((c, idx) => {
+            const tot = c.read + c.think + c.code + c.debug;
+            html += `<span class="text-[11px] bg-slate-800 text-sky-300 px-2 py-1 rounded border border-slate-600 shadow-sm">Cycle ${idx + 1}: ${formatCPTime(tot)}</span>`;
+        });
+        container.innerHTML = html;
+    }
+
+    // END CODE FOR TIMER
+
+
+    // --- Post-Solve Analytics Logic ---
+    let problemToSave = null;
+
+    function openPostSolveModal(prob) {
+        problemToSave = prob;
+        const modal = document.getElementById('post-solve-modal');
+        
+        let allStats = JSON.parse(localStorage.getItem('cf_analytics_data') || '{}');
+        let existingData = allStats[prob.name];
+        
+        let hasActiveTimer = (phaseTimes.read + phaseTimes.think + phaseTimes.code + phaseTimes.debug) > 0;
+
+        // Pre-fill existing data if modifying a solved problem
+        if (existingData) {
+            document.getElementById('ps-wa').value = existingData.waCount || 0;
+            document.getElementById('ps-hints').checked = existingData.usedHints || false;
+            document.getElementById('ps-solution').checked = existingData.readSolution || false;
+            document.getElementById('ps-notes').value = existingData.notes || "";
+            document.getElementById('ps-code').value = existingData.finalCode || "";
+
+            // Display saved time if timer wasn't running in this session
+            if (!hasActiveTimer) {
+                document.getElementById('ps-time-read').innerText = formatCPTime((existingData.timeStats.read || 0) * 1000);
+                document.getElementById('ps-time-think').innerText = formatCPTime((existingData.timeStats.think || 0) * 1000);
+                document.getElementById('ps-time-code').innerText = formatCPTime((existingData.timeStats.code || 0) * 1000);
+                document.getElementById('ps-time-debug').innerText = formatCPTime((existingData.timeStats.debug || 0) * 1000);
+            }
+        } else {
+            // Reset for a new problem
+            document.getElementById('ps-wa').value = 0;
+            document.getElementById('ps-hints').checked = false;
+            document.getElementById('ps-solution').checked = false;
+            document.getElementById('ps-notes').value = "";
+            document.getElementById('ps-code').value = "";
+        }
+
+        // Display active timer if running
+        if (hasActiveTimer || !existingData) {
+            document.getElementById('ps-time-read').innerText = formatCPTime(phaseTimes.read);
+            document.getElementById('ps-time-think').innerText = formatCPTime(phaseTimes.think);
+            document.getElementById('ps-time-code').innerText = formatCPTime(phaseTimes.code);
+            document.getElementById('ps-time-debug').innerText = formatCPTime(phaseTimes.debug);
+        }
+        
+        if (!isTimerPaused) {
+            isTimerPaused = true;
+            updateInlineTimerUI();
+        }
+        
+        modal.style.display = 'flex';
+        document.getElementById('ps-prob-name').innerText = prob.name;
+    }
+
+    function savePostSolve(isSkipped) {
+        if (!problemToSave) return;
+        const probName = problemToSave.name;
+        
+        let allStats = JSON.parse(localStorage.getItem('cf_analytics_data') || '{}');
+        let existingData = allStats[probName];
+        
+        // 1. تجميع وقت كل الدورات المحفوظة
+        let aggregatedTimes = { read: 0, think: 0, code: 0, debug: 0 };
+        let cycles = JSON.parse(localStorage.getItem('cf_cycles_' + probName) || '[]');
+        
+        cycles.forEach(c => {
+            aggregatedTimes.read += c.read || 0;
+            aggregatedTimes.think += c.think || 0;
+            aggregatedTimes.code += c.code || 0;
+            aggregatedTimes.debug += c.debug || 0;
+        });
+
+        // 2. إضافة الدورة الحالية (التايمر النشط دلوقتي)
+        aggregatedTimes.read += phaseTimes.read;
+        aggregatedTimes.think += phaseTimes.think;
+        aggregatedTimes.code += phaseTimes.code;
+        aggregatedTimes.debug += phaseTimes.debug;
+
+        let hasActiveTime = (aggregatedTimes.read + aggregatedTimes.think + aggregatedTimes.code + aggregatedTimes.debug) > 0;
+        let finalTimeStats, finalTotal;
+
+        if (hasActiveTime || !existingData) {
+            finalTimeStats = {
+                read: Math.floor(aggregatedTimes.read / 1000), 
+                think: Math.floor(aggregatedTimes.think / 1000), 
+                code: Math.floor(aggregatedTimes.code / 1000), 
+                debug: Math.floor(aggregatedTimes.debug / 1000) 
+            };
+            finalTotal = finalTimeStats.read + finalTimeStats.think + finalTimeStats.code + finalTimeStats.debug;
+        } else {
+            finalTimeStats = existingData.timeStats;
+            finalTotal = existingData.totalTime;
+        }
+        
+        if (!isSkipped) {
+            allStats[probName] = {
+                rating: currentRating,
+                date: existingData ? existingData.date : new Date().toISOString(),
+                timeStats: finalTimeStats,
+                totalTime: finalTotal,
+                waCount: parseInt(document.getElementById('ps-wa').value) || 0,
+                usedHints: document.getElementById('ps-hints').checked,
+                readSolution: document.getElementById('ps-solution').checked,
+                notes: document.getElementById('ps-notes').value.trim(),
+                finalCode: document.getElementById('ps-code').value.trim(),
+                cyclesHistory: cycles,
+            };
+            localStorage.setItem('cf_analytics_data', JSON.stringify(allStats));
+            
+            // 3. تنظيف اللوكال ستوريدج (بيمسح التايمر والدورات سوا)
+            localStorage.removeItem('cf_timer_' + probName);
+            localStorage.removeItem('cf_cycles_' + probName);
+        }
+        
+        doneSet.add(probName);
+        localStorage.setItem(`cf_ladder_done_${currentRating}`, JSON.stringify([...doneSet]));
+        
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#4ade80', '#38bdf8'] });
+        closePostSolveModal();
+        renderSidebar(); 
+        updateProgress();
+        resetInlineTimer(); 
+    }
+
+    function closePostSolveModal() {
+        document.getElementById('post-solve-modal').style.display = 'none';
+        problemToSave = null;
+    }
+
+    // ----------------------------
+
+
+    // --- Analytics Dashboard & Export Logic ---
+
+    function toggleAnalyticsModal() {
+        const modal = document.getElementById('analytics-modal');
+        if (window.getComputedStyle(modal).display !== 'none') { 
+            modal.style.display = 'none'; 
+            return;
+        }
+        
+        // Fetch data from local storage
+        const allStats = JSON.parse(localStorage.getItem('cf_analytics_data') || '{}');
+        const problems = Object.values(allStats);
+        
+        // Calculate aggregate statistics
+        const totalSolved = problems.length;
+        let totalSecs = 0;
+        let totalWa = 0;
+        let hintsUsed = 0;
+        
+        problems.forEach(p => {
+            totalSecs += p.totalTime || 0;
+            totalWa += p.waCount || 0;
+            if (p.usedHints || p.readSolution) hintsUsed++;
+        });
+        
+        const avgTime = totalSolved > 0 ? Math.floor(totalSecs / totalSolved) : 0;
+        
+        // Update DOM
+        document.getElementById('stat-total-solved').innerText = totalSolved;
+        
+        // FIX: Multiply avgTime (seconds) by 1000 because formatCPTime expects milliseconds
+        document.getElementById('stat-avg-time').innerText = formatCPTime(avgTime * 1000);
+        
+        document.getElementById('stat-total-wa').innerText = totalWa;
+        document.getElementById('stat-hints').innerText = hintsUsed;
+        
+        modal.style.display = 'flex';
+    }
+
+    function exportAnalytics(format) {
+        const data = localStorage.getItem('cf_analytics_data') || '{}';
+        const parsedData = JSON.parse(data);
+        const problemsCount = Object.keys(parsedData).length;
+        
+        if (problemsCount === 0) {
+            return alert("No analytics data found! Solve some problems and save your stats first. 🚀");
+        }
+        
+        let content = '';
+        let mimeType = '';
+        let extension = '';
+        
+        if (format === 'json') {
+            content = JSON.stringify(parsedData, null, 4);
+            mimeType = 'application/json';
+            extension = 'json';
+        } else if (format === 'csv') {
+            // Create CSV Headers
+            content = 'Problem Name,Rating,Date Solved,Read Time (s),Think Time (s),Code Time (s),Debug Time (s),Total Time (s),Wrong Answers,Used Hints,Read Solution,Notes\n';
+            
+            // Populate CSV rows
+            for (const [name, stats] of Object.entries(parsedData)) {
+                // Clean up notes to prevent CSV formatting issues (escape quotes, remove newlines)
+                const safeNotes = (stats.notes || "").replace(/"/g, '""').replace(/\n/g, ' | ');
+                const dateOnly = stats.date ? stats.date.split('T')[0] : 'N/A';
+                
+                content += `"${name}",${stats.rating},${dateOnly},${stats.timeStats.read},${stats.timeStats.think},${stats.timeStats.code},${stats.timeStats.debug},${stats.totalTime},${stats.waCount},${stats.usedHints},${stats.readSolution},"${safeNotes}"\n`;
+            }
+            mimeType = 'text/csv;charset=utf-8;';
+            extension = 'csv';
+        }
+        
+        // Trigger file download
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `CF_Training_Analytics_${new Date().toISOString().split('T')[0]}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    
+    // Redirect directly to the Codeforces submit page for the active problem
+    function submitCode() {
+        if (!currentProblem) {
+            return alert("Select a problem from the sidebar first! 🚀");
+        }
+        
+        // Construct the correct submission URL
+        const submitUrl = `https://codeforces.com/contest/${currentProblem.contestId}/submit`;
+        
+        // Open the URL in a new tab
+        window.open(submitUrl, '_blank');
+    }
+
+    window.onload = () => { 
+        initApp();
+    };
+</script>
+
+</body>
+</html>

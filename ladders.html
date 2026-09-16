@@ -272,6 +272,7 @@
                 <div class="text-center"><div class="text-slate-500 text-xs">✍️ Think</div><div id="ps-time-think" class="font-mono text-purple-400 font-bold">00:00</div></div>
                 <div class="text-center"><div class="text-slate-500 text-xs">💻 Code</div><div id="ps-time-code" class="font-mono text-orange-400 font-bold">00:00</div></div>
                 <div class="text-center"><div class="text-slate-500 text-xs">🐛 Debug</div><div id="ps-time-debug" class="font-mono text-red-400 font-bold">00:00</div></div>
+                <div class="text-center"><div class="text-slate-500 text-xs">💡 Upsolve</div><div id="ps-time-upsolve" class="font-mono text-yellow-400 font-bold">00:00</div></div>
             </div>
 
             <!-- Manual Analytics -->
@@ -424,7 +425,7 @@
         
         select.value = currentRating;
         loadRatingData();
-        // syncSolvedProblems(); // Auto-sync in the background when the app loads
+        syncSolvedProblems(); // Auto-sync in the background when the app loads
     }
 
     // Handle Dropdown change
@@ -481,8 +482,8 @@
 
             if (!checkbox.checked) {
                 const cycles = JSON.parse(localStorage.getItem('cf_cycles_' + prob.name) || '[]');
-                const timer = JSON.parse(localStorage.getItem('cf_timer_' + prob.name) || '{"read":0,"think":0,"code":0,"debug":0}');
-                const hasActiveTimer = timer.read > 0 || timer.think > 0 || timer.code > 0 || timer.debug > 0;
+                const timer = JSON.parse(localStorage.getItem('cf_timer_' + prob.name) || '{"read":0,"think":0,"code":0,"debug":0,"upsolve":0}');
+                const hasActiveTimer = timer.read > 0 || timer.think > 0 || timer.code > 0 || timer.debug > 0 || (timer.upsolve || 0) > 0;
                 
                 if (cycles.length > 0 || hasActiveTimer) {
                     checkbox.classList.add('in-progress');
@@ -630,7 +631,7 @@
             timerDiv.className = "w-full flex flex-wrap justify-center items-center gap-2 md:gap-3 mt-4 pt-3 border-t border-slate-700/50 bg-slate-800/40 p-2 rounded-lg shadow-inner";
             timerDiv.innerHTML = `
                 <div class="flex items-center gap-1 md:gap-2 select-none w-full justify-center">
-                    <span class="text-xs md:text-sm font-bold text-slate-300 mr-1 md:mr-3">⏱️ Total: <span id="time-total" class="text-sky-400 font-mono text-sm md:text-base tracking-wider">00:00</span></span>
+                    <span class="text-xs md:text-sm font-bold text-slate-300 md:ml-4">⏱️ Total: <span id="time-total" class="text-sky-400 font-mono text-sm md:text-base tracking-wider">00:00</span></span>
                     
                     <button id="btn-phase-read" onclick="togglePhase('read')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
                         📖 Read <span id="time-read" class="font-mono ml-1">00:00</span>
@@ -646,6 +647,10 @@
                     
                     <button id="btn-phase-debug" onclick="togglePhase('debug')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
                         🐛 Debug <span id="time-debug" class="font-mono ml-1">00:00</span>
+                    </button>
+                    
+                    <button id="btn-phase-upsolve" onclick="togglePhase('upsolve')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                        💡 Upsolve <span id="time-upsolve" class="font-mono ml-1">00:00</span>
                     </button>
                     
                     <button onclick="saveCycle()" class="ml-2 px-2 py-1 text-[10px] md:text-xs font-bold rounded bg-sky-900/50 text-sky-400 hover:bg-sky-800 border border-sky-700 transition" title="Save this cycle and start a new one">💾 Save Cycle</button>
@@ -700,8 +705,8 @@
     function saveSettings() {
         const handle = document.getElementById('cf-handle').value.trim();
         localStorage.setItem('cf_handle', handle);
-        localStorage.setItem('cf_api_key', document.getElementById('api-key').value);
-        localStorage.setItem('cf_api_secret', document.getElementById('api-secret').value);
+        // localStorage.setItem('cf_api_key', document.getElementById('api-key').value);
+        // localStorage.setItem('cf_api_secret', document.getElementById('api-secret').value);
         
         toggleSettings(); 
         syncSolvedProblems(); // Sync immediately after saving handle
@@ -917,7 +922,7 @@
 
     // --- Inline Timer Logic (Timestamp-based & Persistent) ---
     let cpTimerInterval = null;
-    let phaseTimes = { read: 0, think: 0, code: 0, debug: 0 };
+    let phaseTimes = { read: 0, think: 0, code: 0, debug: 0, upsolve: 0 };
     let activePhase = null; 
     let isTimerPaused = true;
     let lastTickTime = 0;
@@ -939,9 +944,9 @@
         
         const saved = localStorage.getItem('cf_timer_' + probName);
         if (saved) {
-            phaseTimes = JSON.parse(saved);
+            phaseTimes = Object.assign({ read: 0, think: 0, code: 0, debug: 0, upsolve: 0 }, JSON.parse(saved));
         } else {
-            phaseTimes = { read: 0, think: 0, code: 0, debug: 0 };
+            phaseTimes = { read: 0, think: 0, code: 0, debug: 0, upsolve: 0 };
         }
 
         renderCycles();
@@ -951,27 +956,30 @@
     function updateInlineTimerUI() {
         if (!document.getElementById('time-total')) return; 
         
-        document.getElementById('time-read').innerText = formatCPTime(phaseTimes.read);
-        document.getElementById('time-think').innerText = formatCPTime(phaseTimes.think);
-        document.getElementById('time-code').innerText = formatCPTime(phaseTimes.code);
-        document.getElementById('time-debug').innerText = formatCPTime(phaseTimes.debug);
+        document.getElementById('time-read').innerText = formatCPTime(phaseTimes.read || 0);
+        document.getElementById('time-think').innerText = formatCPTime(phaseTimes.think || 0);
+        document.getElementById('time-code').innerText = formatCPTime(phaseTimes.code || 0);
+        document.getElementById('time-debug').innerText = formatCPTime(phaseTimes.debug || 0);
+        if (document.getElementById('time-upsolve')) {
+            document.getElementById('time-upsolve').innerText = formatCPTime(phaseTimes.upsolve || 0);
+        }
         
-        const total = phaseTimes.read + phaseTimes.think + phaseTimes.code + phaseTimes.debug;
+        const total = (phaseTimes.read || 0) + (phaseTimes.think || 0) + (phaseTimes.code || 0) + (phaseTimes.debug || 0) + (phaseTimes.upsolve || 0);
         document.getElementById('time-total').innerText = formatCPTime(total);
 
-        const phases = ['read', 'think', 'code', 'debug'];
+        const phases = ['read', 'think', 'code', 'debug', 'upsolve'];
         phases.forEach(p => {
             const btn = document.getElementById(`btn-phase-${p}`);
             if (!btn) return;
             
             if (p === activePhase) {
                 if (isTimerPaused) {
-                    btn.className = "px-3 py-1 text-xs font-bold rounded cursor-pointer transition border border-yellow-500 bg-yellow-900/30 text-yellow-400 opacity-80";
+                    btn.className = "px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-yellow-500 bg-yellow-900/30 text-yellow-400 opacity-80";
                 } else {
-                    btn.className = "px-3 py-1 text-xs font-bold rounded cursor-pointer transition border border-green-500 bg-green-900/40 text-green-400 shadow-[0_0_8px_rgba(74,222,128,0.3)]";
+                    btn.className = "px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-green-500 bg-green-900/40 text-green-400 shadow-[0_0_8px_rgba(74,222,128,0.3)]";
                 }
             } else {
-                btn.className = "px-3 py-1 text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700";
+                btn.className = "px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700";
             }
         });
     }
@@ -1023,7 +1031,7 @@
     }
 
     function resetInlineTimer() {
-        phaseTimes = { read: 0, think: 0, code: 0, debug: 0 };
+        phaseTimes = { read: 0, think: 0, code: 0, debug: 0, upsolve: 0 };
         activePhase = null;
         isTimerPaused = true;
         lastTickTime = 0;
@@ -1045,7 +1053,7 @@
             togglePhase(activePhase); 
         }
 
-        const total = phaseTimes.read + phaseTimes.think + phaseTimes.code + phaseTimes.debug;
+        const total = (phaseTimes.read || 0) + (phaseTimes.think || 0) + (phaseTimes.code || 0) + (phaseTimes.debug || 0) + (phaseTimes.upsolve || 0);
         if (total === 0) return alert("لا يوجد وقت لحفظه في هذه الدورة!");
 
         // جلب الدورات السابقة للمسألة دي من اللوكال ستوريدج
@@ -1069,7 +1077,7 @@
         
         let html = '<span class="text-xs text-slate-400 font-bold flex items-center">🎯 Previous Cycles:</span>';
         cycles.forEach((c, idx) => {
-            const tot = c.read + c.think + c.code + c.debug;
+            const tot = (c.read || 0) + (c.think || 0) + (c.code || 0) + (c.debug || 0) + (c.upsolve || 0);
             html += `<span class="text-[11px] bg-slate-800 text-sky-300 px-2 py-1 rounded border border-slate-600 shadow-sm">Cycle ${idx + 1}: ${formatCPTime(tot)}</span>`;
         });
         container.innerHTML = html;
@@ -1088,7 +1096,7 @@
         let allStats = JSON.parse(localStorage.getItem('cf_analytics_data') || '{}');
         let existingData = allStats[prob.name];
         
-        let hasActiveTimer = (phaseTimes.read + phaseTimes.think + phaseTimes.code + phaseTimes.debug) > 0;
+        let hasActiveTimer = ((phaseTimes.read || 0) + (phaseTimes.think || 0) + (phaseTimes.code || 0) + (phaseTimes.debug || 0) + (phaseTimes.upsolve || 0)) > 0;
 
         // Pre-fill existing data if modifying a solved problem
         if (existingData) {
@@ -1100,10 +1108,13 @@
 
             // Display saved time if timer wasn't running in this session
             if (!hasActiveTimer) {
-                document.getElementById('ps-time-read').innerText = formatCPTime((existingData.timeStats.read || 0) * 1000);
-                document.getElementById('ps-time-think').innerText = formatCPTime((existingData.timeStats.think || 0) * 1000);
-                document.getElementById('ps-time-code').innerText = formatCPTime((existingData.timeStats.code || 0) * 1000);
-                document.getElementById('ps-time-debug').innerText = formatCPTime((existingData.timeStats.debug || 0) * 1000);
+                document.getElementById('ps-time-read').innerText = formatCPTime((existingData.timeStats?.read || 0) * 1000);
+                document.getElementById('ps-time-think').innerText = formatCPTime((existingData.timeStats?.think || 0) * 1000);
+                document.getElementById('ps-time-code').innerText = formatCPTime((existingData.timeStats?.code || 0) * 1000);
+                document.getElementById('ps-time-debug').innerText = formatCPTime((existingData.timeStats?.debug || 0) * 1000);
+                if (document.getElementById('ps-time-upsolve')) {
+                    document.getElementById('ps-time-upsolve').innerText = formatCPTime((existingData.timeStats?.upsolve || 0) * 1000);
+                }
             }
         } else {
             // Reset for a new problem
@@ -1116,10 +1127,13 @@
 
         // Display active timer if running
         if (hasActiveTimer || !existingData) {
-            document.getElementById('ps-time-read').innerText = formatCPTime(phaseTimes.read);
-            document.getElementById('ps-time-think').innerText = formatCPTime(phaseTimes.think);
-            document.getElementById('ps-time-code').innerText = formatCPTime(phaseTimes.code);
-            document.getElementById('ps-time-debug').innerText = formatCPTime(phaseTimes.debug);
+            document.getElementById('ps-time-read').innerText = formatCPTime(phaseTimes.read || 0);
+            document.getElementById('ps-time-think').innerText = formatCPTime(phaseTimes.think || 0);
+            document.getElementById('ps-time-code').innerText = formatCPTime(phaseTimes.code || 0);
+            document.getElementById('ps-time-debug').innerText = formatCPTime(phaseTimes.debug || 0);
+            if (document.getElementById('ps-time-upsolve')) {
+                document.getElementById('ps-time-upsolve').innerText = formatCPTime(phaseTimes.upsolve || 0);
+            }
         }
         
         if (!isTimerPaused) {
@@ -1139,7 +1153,7 @@
         let existingData = allStats[probName];
         
         // 1. تجميع وقت كل الدورات المحفوظة
-        let aggregatedTimes = { read: 0, think: 0, code: 0, debug: 0 };
+        let aggregatedTimes = { read: 0, think: 0, code: 0, debug: 0, upsolve: 0 };
         let cycles = JSON.parse(localStorage.getItem('cf_cycles_' + probName) || '[]');
         
         cycles.forEach(c => {
@@ -1147,15 +1161,17 @@
             aggregatedTimes.think += c.think || 0;
             aggregatedTimes.code += c.code || 0;
             aggregatedTimes.debug += c.debug || 0;
+            aggregatedTimes.upsolve += c.upsolve || 0;
         });
 
         // 2. إضافة الدورة الحالية (التايمر النشط دلوقتي)
-        aggregatedTimes.read += phaseTimes.read;
-        aggregatedTimes.think += phaseTimes.think;
-        aggregatedTimes.code += phaseTimes.code;
-        aggregatedTimes.debug += phaseTimes.debug;
+        aggregatedTimes.read += phaseTimes.read || 0;
+        aggregatedTimes.think += phaseTimes.think || 0;
+        aggregatedTimes.code += phaseTimes.code || 0;
+        aggregatedTimes.debug += phaseTimes.debug || 0;
+        aggregatedTimes.upsolve += phaseTimes.upsolve || 0;
 
-        let hasActiveTime = (aggregatedTimes.read + aggregatedTimes.think + aggregatedTimes.code + aggregatedTimes.debug) > 0;
+        let hasActiveTime = (aggregatedTimes.read + aggregatedTimes.think + aggregatedTimes.code + aggregatedTimes.debug + aggregatedTimes.upsolve) > 0;
         let finalTimeStats, finalTotal;
 
         if (hasActiveTime || !existingData) {
@@ -1163,11 +1179,13 @@
                 read: Math.floor(aggregatedTimes.read / 1000), 
                 think: Math.floor(aggregatedTimes.think / 1000), 
                 code: Math.floor(aggregatedTimes.code / 1000), 
-                debug: Math.floor(aggregatedTimes.debug / 1000) 
+                debug: Math.floor(aggregatedTimes.debug / 1000),
+                upsolve: Math.floor(aggregatedTimes.upsolve / 1000)
             };
-            finalTotal = finalTimeStats.read + finalTimeStats.think + finalTimeStats.code + finalTimeStats.debug;
+            finalTotal = finalTimeStats.read + finalTimeStats.think + finalTimeStats.code + finalTimeStats.debug + finalTimeStats.upsolve;
         } else {
-            finalTimeStats = existingData.timeStats;
+            finalTimeStats = existingData.timeStats || {};
+            if (finalTimeStats.upsolve === undefined) finalTimeStats.upsolve = 0;
             finalTotal = existingData.totalTime;
         }
         
@@ -1267,15 +1285,21 @@
             extension = 'json';
         } else if (format === 'csv') {
             // Create CSV Headers
-            content = 'Problem Name,Rating,Date Solved,Read Time (s),Think Time (s),Code Time (s),Debug Time (s),Total Time (s),Wrong Answers,Used Hints,Read Solution,Notes\n';
+            content = 'Problem Name,Rating,Date Solved,Read Time (s),Think Time (s),Code Time (s),Debug Time (s),Upsolve Time (s),Total Time (s),Wrong Answers,Used Hints,Read Solution,Notes\n';
             
             // Populate CSV rows
             for (const [name, stats] of Object.entries(parsedData)) {
                 // Clean up notes to prevent CSV formatting issues (escape quotes, remove newlines)
                 const safeNotes = (stats.notes || "").replace(/"/g, '""').replace(/\n/g, ' | ');
                 const dateOnly = stats.date ? stats.date.split('T')[0] : 'N/A';
+                const ts = stats.timeStats || {};
+                const readTime = ts.read || 0;
+                const thinkTime = ts.think || 0;
+                const codeTime = ts.code || 0;
+                const debugTime = ts.debug || 0;
+                const upsolveTime = ts.upsolve || 0;
                 
-                content += `"${name}",${stats.rating},${dateOnly},${stats.timeStats.read},${stats.timeStats.think},${stats.timeStats.code},${stats.timeStats.debug},${stats.totalTime},${stats.waCount},${stats.usedHints},${stats.readSolution},"${safeNotes}"\n`;
+                content += `"${name}",${stats.rating},${dateOnly},${readTime},${thinkTime},${codeTime},${debugTime},${upsolveTime},${stats.totalTime},${stats.waCount},${stats.usedHints},${stats.readSolution},"${safeNotes}"\n`;
             }
             mimeType = 'text/csv;charset=utf-8;';
             extension = 'csv';

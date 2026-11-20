@@ -613,11 +613,11 @@
             // Insert it strictly between the header and the problem text
             headerEl.parentNode.insertBefore(tutorialBox, headerEl.nextSibling);
 
-            // (3) Inject the new Inline Timer below the buttons
-            // Load persistent timer
-            loadTimerState(prob.name); 
+            // (3) Inject the new Inline Timer below the buttons.
+            // Load persistent timer state (always needed for the active-timer path).
+            loadTimerState(prob.name);
 
-            // Add an "Edit Stats" button if the problem is already solved
+            // Add an "Edit Stats" button if the problem is already solved.
             if (doneSet.has(prob.name)) {
                 const editBtn = document.createElement('button');
                 editBtn.innerHTML = "📝 Edit Stats";
@@ -626,38 +626,25 @@
                 editBtn.onclick = () => openPostSolveModal(prob);
                 btnsDiv.appendChild(editBtn);
             }
-            
+
+            // Wrapper div that holds either the solved-summary card or the active timer bar.
             const timerDiv = document.createElement('div');
-            timerDiv.className = "w-full flex flex-wrap justify-center items-center gap-2 md:gap-3 mt-4 pt-3 border-t border-slate-700/50 bg-slate-800/40 p-2 rounded-lg shadow-inner";
-            timerDiv.innerHTML = `
-                <div class="flex items-center gap-1 md:gap-2 select-none w-full justify-center">
-                    <span class="text-xs md:text-sm font-bold text-slate-300 md:ml-4">⏱️ Total: <span id="time-total" class="text-sky-400 font-mono text-sm md:text-base tracking-wider">00:00</span></span>
-                    
-                    <button id="btn-phase-read" onclick="togglePhase('read')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
-                        📖 Read <span id="time-read" class="font-mono ml-1">00:00</span>
-                    </button>
-                    
-                    <button id="btn-phase-think" onclick="togglePhase('think')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
-                        ✍️ Think <span id="time-think" class="font-mono ml-1">00:00</span>
-                    </button>
-                    
-                    <button id="btn-phase-code" onclick="togglePhase('code')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
-                        💻 Code <span id="time-code" class="font-mono ml-1">00:00</span>
-                    </button>
-                    
-                    <button id="btn-phase-debug" onclick="togglePhase('debug')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
-                        🐛 Debug <span id="time-debug" class="font-mono ml-1">00:00</span>
-                    </button>
-                    
-                    <button id="btn-phase-upsolve" onclick="togglePhase('upsolve')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
-                        💡 Upsolve <span id="time-upsolve" class="font-mono ml-1">00:00</span>
-                    </button>
-                    
-                    <button onclick="saveCycle()" class="ml-2 px-2 py-1 text-[10px] md:text-xs font-bold rounded bg-sky-900/50 text-sky-400 hover:bg-sky-800 border border-sky-700 transition" title="Save this cycle and start a new one">💾 Save Cycle</button>
-                    <button onclick="resetInlineTimer()" class="ml-1 px-2 py-1 text-[10px] md:text-xs font-bold rounded bg-slate-700/50 text-slate-400 hover:bg-red-900/60 hover:text-red-400 border border-slate-600 hover:border-red-700/50 transition" title="Reset Timer">↻</button>
-                </div>
-                <div id="cycles-list" class="w-full mt-3 flex flex-wrap justify-center gap-2 empty:hidden"></div>
-            `;
+            timerDiv.id = "inline-timer-wrapper";
+            timerDiv.className = "w-full mt-4 pt-3 border-t border-slate-700/50";
+
+            // Decide which view to render inside the wrapper.
+            const savedAnalytics = JSON.parse(localStorage.getItem('cf_analytics_data') || '{}');
+            const probStats = savedAnalytics[prob.name];
+
+            if (doneSet.has(prob.name) && probStats && probStats.timeStats) {
+                // --- Solved with saved stats: show the summary card instead of live timers ---
+                timerDiv.innerHTML = buildSolvedSummaryCardHTML(prob, probStats);
+            } else {
+                // --- Unsolved (or solved but no saved stats): show the live inline timer ---
+                timerDiv.innerHTML = buildActiveTimerHTML();
+                timerDiv.className += " flex flex-wrap justify-center items-center gap-2 md:gap-3 bg-slate-800/40 p-2 rounded-lg shadow-inner";
+            }
+
             headerEl.appendChild(timerDiv);
             renderCycles();
         }
@@ -919,6 +906,130 @@
     }
 
     // Timer -----------
+
+    // --- Helper: Returns the HTML string for the active inline timer bar ---
+    function buildActiveTimerHTML() {
+        return `
+            <div class="flex items-center gap-1 md:gap-2 select-none w-full justify-center">
+                <span class="text-xs md:text-sm font-bold text-slate-300 md:ml-4">⏱️ Total: <span id="time-total" class="text-sky-400 font-mono text-sm md:text-base tracking-wider">00:00</span></span>
+
+                <button id="btn-phase-read" onclick="togglePhase('read')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                    📖 Read <span id="time-read" class="font-mono ml-1">00:00</span>
+                </button>
+
+                <button id="btn-phase-think" onclick="togglePhase('think')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                    ✍️ Think <span id="time-think" class="font-mono ml-1">00:00</span>
+                </button>
+
+                <button id="btn-phase-code" onclick="togglePhase('code')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                    💻 Code <span id="time-code" class="font-mono ml-1">00:00</span>
+                </button>
+
+                <button id="btn-phase-debug" onclick="togglePhase('debug')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                    🐛 Debug <span id="time-debug" class="font-mono ml-1">00:00</span>
+                </button>
+
+                <button id="btn-phase-upsolve" onclick="togglePhase('upsolve')" class="px-2 md:px-3 py-1 text-[10px] md:text-xs font-bold rounded cursor-pointer transition border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700">
+                    💡 Upsolve <span id="time-upsolve" class="font-mono ml-1">00:00</span>
+                </button>
+
+                <button onclick="saveCycle()" class="ml-2 px-2 py-1 text-[10px] md:text-xs font-bold rounded bg-sky-900/50 text-sky-400 hover:bg-sky-800 border border-sky-700 transition" title="Save this cycle and start a new one">💾 Save Cycle</button>
+                <button onclick="resetInlineTimer()" class="ml-1 px-2 py-1 text-[10px] md:text-xs font-bold rounded bg-slate-700/50 text-slate-400 hover:bg-red-900/60 hover:text-red-400 border border-slate-600 hover:border-red-700/50 transition" title="Reset Timer">↻</button>
+            </div>
+            <div id="cycles-list" class="w-full mt-3 flex flex-wrap justify-center gap-2 empty:hidden"></div>
+        `;
+    }
+
+    // --- Helper: Returns the HTML string for the solved-problem summary card ---
+    // stats is the saved cf_analytics_data entry; timeStats values are stored in seconds.
+    function buildSolvedSummaryCardHTML(prob, stats) {
+        const ts = stats.timeStats || {};
+        // Convert each stored second value to milliseconds for formatCPTime
+        const totalMs = ((ts.read || 0) + (ts.think || 0) + (ts.code || 0) + (ts.debug || 0) + (ts.upsolve || 0)) * 1000;
+
+        // Build optional badge row (only show badges when the value is meaningful)
+        let badges = '';
+        if (stats.waCount > 0) {
+            badges += `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-900/50 text-red-400 border border-red-700/50">❌ ${stats.waCount} WA</span>`;
+        }
+        if (stats.usedHints) {
+            badges += `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-900/50 text-purple-300 border border-purple-700/50">💡 Hints</span>`;
+        }
+        if (stats.readSolution) {
+            badges += `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-900/50 text-yellow-300 border border-yellow-700/50">👀 Read Solution</span>`;
+        }
+        if (stats.cyclesHistory && stats.cyclesHistory.length > 0) {
+            badges += `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-900/50 text-sky-300 border border-sky-700/50">🔄 ${stats.cyclesHistory.length} Cycle${stats.cyclesHistory.length > 1 ? 's' : ''}</span>`;
+        }
+
+        const badgeRow = badges
+            ? `<div class="flex flex-wrap justify-center gap-1.5 mt-2">${badges}</div>`
+            : '';
+
+        return `
+            <div class="w-full flex flex-col items-center gap-2 bg-slate-800/60 border border-green-700/40 rounded-xl px-4 py-3 shadow-inner">
+                <!-- Summary header row -->
+                <div class="flex items-center justify-between w-full">
+                    <span class="text-xs font-bold text-green-400 flex items-center gap-1.5">
+                        ✅ Solved
+                        <span class="text-slate-400 font-normal">·</span>
+                        <span class="text-slate-300 font-mono">⏱️ ${formatCPTime(totalMs)}</span>
+                    </span>
+                    <!-- "Open Timer" action lets the user re-enable the live timer for extra practice -->
+                    <button
+                        onclick="showInlineTimerForSolved(currentProblem)"
+                        class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-700 text-sky-400 border border-sky-700/60 hover:bg-sky-900/50 hover:border-sky-500 transition"
+                        title="Re-open the live timer for extra practice / upsolve"
+                    >▶ Open Timer</button>
+                </div>
+
+                <!-- Phase breakdown row -->
+                <div class="flex flex-wrap justify-center gap-2 md:gap-3 w-full">
+                    <span class="flex flex-col items-center">
+                        <span class="text-[9px] text-slate-500 uppercase tracking-wider">📖 Read</span>
+                        <span class="font-mono text-sky-400 text-xs font-bold">${formatCPTime((ts.read || 0) * 1000)}</span>
+                    </span>
+                    <span class="flex flex-col items-center">
+                        <span class="text-[9px] text-slate-500 uppercase tracking-wider">✍️ Think</span>
+                        <span class="font-mono text-purple-400 text-xs font-bold">${formatCPTime((ts.think || 0) * 1000)}</span>
+                    </span>
+                    <span class="flex flex-col items-center">
+                        <span class="text-[9px] text-slate-500 uppercase tracking-wider">💻 Code</span>
+                        <span class="font-mono text-orange-400 text-xs font-bold">${formatCPTime((ts.code || 0) * 1000)}</span>
+                    </span>
+                    <span class="flex flex-col items-center">
+                        <span class="text-[9px] text-slate-500 uppercase tracking-wider">🐛 Debug</span>
+                        <span class="font-mono text-red-400 text-xs font-bold">${formatCPTime((ts.debug || 0) * 1000)}</span>
+                    </span>
+                    <span class="flex flex-col items-center">
+                        <span class="text-[9px] text-slate-500 uppercase tracking-wider">💡 Upsolve</span>
+                        <span class="font-mono text-yellow-400 text-xs font-bold">${formatCPTime((ts.upsolve || 0) * 1000)}</span>
+                    </span>
+                </div>
+
+                ${badgeRow}
+            </div>
+        `;
+    }
+
+    // --- Action: Replace the solved summary card with the live timer bar ---
+    // Called when the user clicks "Open Timer" inside the solved summary card.
+    function showInlineTimerForSolved(prob) {
+        const wrapper = document.getElementById('inline-timer-wrapper');
+        if (!wrapper) return;
+
+        // Swap classes: remove card styling, add active-timer bar styling
+        wrapper.className = "w-full flex flex-wrap justify-center items-center gap-2 md:gap-3 mt-4 pt-3 border-t border-slate-700/50 bg-slate-800/40 p-2 rounded-lg shadow-inner";
+        wrapper.id = "inline-timer-wrapper"; // keep the id stable
+
+        // Reset and load any previously saved in-progress timer for this problem
+        loadTimerState(prob.name);
+        wrapper.innerHTML = buildActiveTimerHTML();
+        // Re-render any saved cycles below the timer
+        renderCycles();
+        // Reflect the loaded phaseTimes in the UI
+        updateInlineTimerUI();
+    }
 
     // --- Inline Timer Logic (Timestamp-based & Persistent) ---
     let cpTimerInterval = null;
